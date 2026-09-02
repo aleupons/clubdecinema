@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export function middleware(req) {
+export function proxy(req) {
   const basicAuth = req.headers.get('authorization');
 
   if (basicAuth) {
@@ -18,7 +18,6 @@ export function middleware(req) {
   });
 }
 
-// Això indica que el middleware només s'apliqui a la ruta /admin i els seus subdirectoris
 export const config = {
   matcher: ['/admin/:path*'],
 };
