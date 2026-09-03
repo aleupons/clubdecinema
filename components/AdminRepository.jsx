@@ -7,6 +7,7 @@ export default function AdminRepository({ movies, tags, activeMoviesCount, toggl
   const [filterWinner, setFilterWinner] = useState('all');
   const [sortBy, setSortBy] = useState('title');
   const [isPending, startTransition] = useTransition();
+  const [movieToDelete, setMovieToDelete] = useState(null);
 
   const movieVotesMap = {};
   const winningTmdbIds = new Set();
@@ -55,6 +56,16 @@ export default function AdminRepository({ movies, tags, activeMoviesCount, toggl
       return a.title.localeCompare(b.title);
     });
   });
+
+  const confirmDelete = () => {
+    if (!movieToDelete) return;
+    const formData = new FormData();
+    formData.append('id', movieToDelete._id);
+    startTransition(() => {
+      eliminarPeli(formData);
+    });
+    setMovieToDelete(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -184,12 +195,14 @@ export default function AdminRepository({ movies, tags, activeMoviesCount, toggl
                             </button>
                           </form>
 
-                          <form action={eliminarPeli}>
-                            <input type="hidden" name="id" value={movie._id} />
-                            <button type="submit" className="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer" title="Eliminar pel·lícula">
-                              🗑️
-                            </button>
-                          </form>
+                          <button
+                            type="button"
+                            onClick={() => setMovieToDelete(movie)}
+                            className="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer"
+                            title="Eliminar pel·lícula"
+                          >
+                            🗑️
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -203,6 +216,36 @@ export default function AdminRepository({ movies, tags, activeMoviesCount, toggl
           <p className="text-center text-slate-400 py-8">No s'ha trobat cap pel·lícula.</p>
         )}
       </div>
+
+      {/* Modal alerta eliminar */}
+      {movieToDelete && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
+          <div className="bg-slate-800 border border-slate-600 rounded-xl p-6 max-w-sm w-full shadow-xl">
+            <h3 className="text-slate-200 font-semibold text-base mb-2">
+              Eliminar pel·lícula
+            </h3>
+            <p className="text-slate-400 text-sm mb-5">
+              Segur que vols eliminar <span className="text-slate-200 font-medium">{movieToDelete.title}</span>? Aquesta acció no es pot desfer.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setMovieToDelete(null)}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 border border-slate-600 hover:bg-slate-700 transition cursor-pointer"
+              >
+                Cancel·lar
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 transition cursor-pointer"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

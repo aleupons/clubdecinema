@@ -1,40 +1,59 @@
 'use client';
-import { useState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useState, useRef, useEffect } from 'react';
 
-function VoteButton({ isVoted, hasVotedOther, compact }) {
-  const { pending } = useFormStatus();
+function Synopsis({ movieId, overview, expandedIds, toggleExpanded, clampClass, textClass }) {
+  const ref = useRef(null);
+  const [canExpand, setCanExpand] = useState(false);
+  const expanded = !!expandedIds[movieId];
 
-  let text = "Votar";
-  let icon = "🗳️";
-  let colorClass = "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-900/20 text-white";
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
 
-  if (isVoted) {
-    text = compact ? "Retirar" : "Retirar vot";
-    icon = "❌";
-    colorClass = "bg-rose-600/90 hover:bg-rose-500 shadow-rose-900/20 text-white outline outline-2 outline-offset-1 outline-rose-500";
-  } else if (hasVotedOther) {
-    text = compact ? "Canviar" : "Canviar vot";
-    icon = "🔄";
-    colorClass = "bg-amber-600/90 hover:bg-amber-500 shadow-amber-900/20 text-white";
-  }
+    const measure = () => {
+      setCanExpand(el.scrollHeight > el.clientHeight + 1);
+    };
+
+    // Mesura inicial (després del primer paint)
+    const raf = requestAnimationFrame(measure);
+
+    // Torna a mesurar quan les fonts acabin de carregar (evita mesures amb font de fallback)
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(measure);
+    }
+
+    // Torna a mesurar si canvia la mida de viewport (mòbil <-> desktop sense recarregar)
+    window.addEventListener('resize', measure);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', measure);
+    };
+  }, [overview]);
 
   return (
-    <button 
-      type="submit" 
-      disabled={pending}
-      className={`w-full font-bold transition shadow-lg cursor-pointer flex items-center justify-center gap-2 ${
-        compact ? 'py-1.5 text-xs rounded-lg' : 'py-3 rounded-xl'
-      } ${colorClass}${pending ? 'opacity-50 cursor-wait' : ''}`}
-    >
-      <span>{pending ? '⏳' : icon}</span> {pending ? (compact ? '...' : 'Processant...') : text}
-    </button>
+    <>
+      <p ref={ref} className={`${textClass} ${expanded ? '' : clampClass}`}>
+        {overview || "Sense sinopsi disponible per aquesta pel·lícula."}
+      </p>
+      {canExpand && (
+        <button
+          type="button"
+          onClick={() => toggleExpanded(movieId)}
+          className="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold mt-1 cursor-pointer"
+        >
+          {expanded ? 'Amagar ▲' : 'Llegir-ne més ▼'}
+        </button>
+      )}
+    </>
   );
 }
 
 export default function ActiveMoviesList({ activeMovies, isVotingReady, votedMovieId, votar, votingClosed = false }) {
-  // 2. Estat per controlar el tipus de vista
   const [viewMode, setViewMode] = useState('detailed'); // 'detailed' o 'compact'
+  const [expandedIds, setExpandedIds] = useState({});
+  
+  const toggleExpanded = (id) => setExpandedIds(prev => ({ ...prev, [id]: !prev[id] }));
 
   return (
     <div className="space-y-6">
@@ -93,7 +112,7 @@ export default function ActiveMoviesList({ activeMovies, isVotingReady, votedMov
         <div className={
           viewMode === 'detailed' 
             ? "grid grid-cols-1 md:grid-cols-2 gap-6" 
-            : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+            : "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3"
         }>
           {activeMovies.map(movie => {
             const anyPeli = movie.release_date ? new Date(movie.release_date).getFullYear() : (movie.year || '');
@@ -112,22 +131,47 @@ export default function ActiveMoviesList({ activeMovies, isVotingReady, votedMov
                     movie.guanyadora ? 'border-amber-500/50' : 'border-slate-700/50'
                   } bg-slate-800 border rounded-xl overflow-hidden shadow flex flex-col transition-all duration-300 has-[button:hover]:border-indigo-400 has-[button:hover]:shadow-lg has-[button:hover]:shadow-indigo-500/20 has-[button:hover]:-translate-y-1`}
                 >
-                  <div className="p-3 flex gap-3 flex-1 items-center">
+                  <div className="p-3 flex gap-3 items-start">
                     {movie.poster ? (
                       <img src={`https://image.tmdb.org/t/p/w92${movie.poster}`} alt={movie.title} className="w-10 h-14 object-cover rounded shadow-sm flex-shrink-0" />
                     ) : (
                       <div className="w-10 h-14 bg-slate-700 rounded flex items-center justify-center text-[8px] text-slate-400 flex-shrink-0">Sense Img</div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-xs font-bold text-white truncate" title={movie.title}>{movie.title}</h4>
+                      <div className="flex justify-between items-start gap-1">
+                        <h4 className="text-xs font-bold text-white truncate" title={movie.title}>{movie.title}</h4>
+                        <a 
+                          href={`https://www.themoviedb.org/movie/${movie.tmdbId}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-[10px] text-slate-300 bg-slate-700/50 hover:bg-slate-600 hover:text-white px-1 rounded-md border border-slate-600 transition-colors flex items-center gap-1 uppercase tracking-wide flex-shrink-0"
+                          title="Veure a TMDB"
+                        >
+                          TMDB ↗
+                        </a>
+                      </div>
                       <div className="flex items-center justify-between mt-1">
                         <span className="text-[10px] text-slate-400">{anyPeli}</span>
                         <span className="text-[10px] font-bold text-emerald-400">⭐ {movie.votes}</span>
                       </div>
                     </div>
                   </div>
+
+                  <span
+                    type="button"
+                    onClick={() => toggleExpanded(movie._id)}
+                    className="w-full text-[10px] text-indigo-300 hover:text-indigo-400 ps-3 pb-1 cursor-pointer"
+                  >
+                    {expandedIds[movie._id] ? '▲ Amagar sinopsi' : '▼ Veure sinopsi'}
+                  </span>
+                  {expandedIds[movie._id] && (
+                    <p className="text-[10px] text-slate-300 leading-relaxed px-3 pb-2 text-justify">
+                      {movie.overview || "Sense sinopsi disponible per aquesta pel·lícula."}
+                    </p>
+                  )}
+
                   {!votingClosed && (
-                    <div className={`p-2 border-t ${isMyVote ? 'border-emerald-500/30 bg-emerald-900/10' : 'border-slate-700/50 bg-slate-800/80'}`}>
+                    <div className={`mt-auto p-2 border-t ${isMyVote ? 'border-emerald-500/30 bg-emerald-900/10' : 'border-slate-700/50 bg-slate-800/80'}`}>
                       <form action={votar}>
                         <input type="hidden" name="id" value={movie._id} />
                         <button type="submit" className={`w-full text-white text-xs font-bold py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1 ${
@@ -196,9 +240,14 @@ export default function ActiveMoviesList({ activeMovies, isVotingReady, votedMov
                 
                 <div className="px-5 pb-5 flex-1">
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Sinopsi</h4>
-                  <p className="text-sm text-slate-300 leading-relaxed text-justify line-clamp-4">
-                    {movie.overview || "Sense sinopsi disponible per aquesta pel·lícula."}
-                  </p>
+                  <Synopsis
+                    movieId={movie._id}
+                    overview={movie.overview}
+                    expandedIds={expandedIds}
+                    toggleExpanded={toggleExpanded}
+                    clampClass="line-clamp-3 md:line-clamp-none"
+                    textClass="text-sm text-slate-300 leading-relaxed text-justify"
+                  />
                 </div>
 
                 {!votingClosed && (

@@ -52,7 +52,13 @@ export default function LiveSearch({ onAddMovie, tags = [], existingMovies = [] 
     e.preventDefault();
     const form = e.target;
     const formData = new FormData(form);
-    
+    const tagId = formData.get("tagId");
+
+    if (!tagId) {
+      setStatusMsg({ text: 'Has de seleccionar una categoria', type: 'error' });
+      return;
+    }
+
     setStatusMsg({ text: 'Afegint...', type: 'info' });
     
     try {
@@ -117,10 +123,18 @@ export default function LiveSearch({ onAddMovie, tags = [], existingMovies = [] 
                 )}
                 
                 <div className="flex-1 flex flex-col justify-between">
-                  <div>
+                  <div className="flex justify-between items-start gap-1">
                     <h5 className="font-bold text-sm text-slate-200 line-clamp-2" title={movie.title}>{movie.title}</h5>
-                    <p className="text-xs text-slate-400 mt-0.5">{movie.release_date ? movie.release_date.split('-')[0] : 'Sense data'}</p>
+                    <a href={`https://www.themoviedb.org/movie/${movie.id}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-[10px] text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/30 flex-shrink-0"
+                      title="Veure a TMDB"
+                    >
+                      TMDB ↗
+                    </a>
                   </div>
+                  <p className="text-xs text-slate-400 mt-0.5">{movie.release_date ? movie.release_date.split('-')[0] : 'Sense data'}</p>
                   
                   <form onSubmit={(e) => handleAdd(e, movie)} className="mt-2 flex gap-1">
                     <input type="hidden" name="tmdbId" value={movie.id} />
@@ -130,7 +144,8 @@ export default function LiveSearch({ onAddMovie, tags = [], existingMovies = [] 
                     <input type="hidden" name="overview" value={movie.overview || ''} />
                     
                     {!alreadyExists && (
-                      <select name="tagId" className="bg-slate-800 border border-slate-600 rounded-lg text-[10px] px-1 text-slate-300 flex-1 min-w-0 cursor-pointer">
+                      <select name="tagId" required defaultValue="" className="bg-slate-800 border border-slate-600 rounded-lg text-[10px] px-1 text-slate-300 flex-1 min-w-0 cursor-pointer">
+                        <option value="" disabled className="text-slate-500 opacity-50">Seleccionar categoria</option>
                         {tags.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
                       </select>
                     )}

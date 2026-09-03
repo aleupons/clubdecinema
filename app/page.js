@@ -137,10 +137,6 @@ export default async function Home() {
       return { success: false, error: 'Aquesta pel·lícula ja existeix al repositori!' };
     }
 
-    if (!tagId && tags.length > 0) {
-      tagId = tags[0]._id;
-    }
-
     await Movie.create({
       tmdbId,
       title,
