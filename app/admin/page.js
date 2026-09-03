@@ -10,6 +10,8 @@ import LiveSearch from '@/components/LiveSearch';
 import Navbar from '@/components/Navbar';
 import VotingControls from '@/components/VotingControls';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminPage() {
   await connectDB();
   const rawTags = await Tag.find().lean();

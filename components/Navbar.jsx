@@ -112,7 +112,7 @@ export default function Navbar({ page }) {
         </div>
 
         <div className="md:hidden flex items-center">
-          <button onClick={() => setIsOpen(!isOpen)} className="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition cursor-pointer">
+          <button onClick={() => setIsOpen(!isOpen)} className="p-2 px-4 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition cursor-pointer">
             {isOpen ? '✕' : '☰'}
           </button>
         </div>

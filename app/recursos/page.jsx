@@ -7,7 +7,7 @@ export default function RecursosPage() {
 
       <div className="max-w-7xl mx-auto p-6 md:p-12 space-y-12">
         {/* Capçalera */}
-        <div className="text-center space-y-4">
+        <header className="text-center space-y-2 pt-4">
           <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
             Recursos del Club de Cinema
           </h1>
@@ -15,7 +15,7 @@ export default function RecursosPage() {
             Una guia completa de recursos, enllaços d'interès, plataformes,
             catàlegs i col·leccions per als amants del setè art.
           </p>
-        </div>
+        </header>
 
         {/* 1. PEL·LÍCULES */}
         <section

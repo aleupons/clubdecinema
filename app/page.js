@@ -39,7 +39,7 @@ export default async function Home() {
 
   const isVotingReady = activeMovies.length === 10;
 
-  const rawRepoMovies = await Movie.find({ en_votacio: false }).lean();
+  const rawRepoMovies = await Movie.find().lean();
   const repoMovies = rawRepoMovies.map(m => {
     let resolvedTag = null;
     if (m.tag) {

@@ -139,7 +139,7 @@ export default function ActiveMoviesList({ activeMovies, isVotingReady, votedMov
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start gap-1">
-                        <h4 className="text-xs font-bold text-white truncate" title={movie.title}>{movie.title}</h4>
+                        <h4 className="text-wrap text-xs font-bold text-white truncate" title={movie.title}>{movie.title}</h4>
                         <a 
                           href={`https://www.themoviedb.org/movie/${movie.tmdbId}`} 
                           target="_blank" 

@@ -229,7 +229,7 @@ function renderMovieCard(movie, winningTmdbIds, voteMap, tags, viewMode) {
       )}
       
       <div className="min-w-0 flex-1 flex flex-col h-full">
-        <h4 className="font-bold text-xs text-slate-100 truncate group-hover:text-indigo-300 transition" title={movie.title}>{movie.title}</h4>
+        <h4 className="font-bold text-wrap text-xs text-slate-100 truncate group-hover:text-indigo-300 transition" title={movie.title}>{movie.title}</h4>
         {anyPeli && <p className="text-[10px] text-slate-400 mt-0.5">{anyPeli}</p>}
         
         <div className="flex flex-wrap items-center gap-1.5 mt-2">
@@ -246,6 +246,11 @@ function renderMovieCard(movie, winningTmdbIds, voteMap, tags, viewMode) {
           {guanyadora && (
             <span className="inline-block text-[9px] bg-amber-500/10 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-medium">
               🏆 Guanyadora
+            </span>
+          )}
+          {movie.en_votacio && (
+            <span className="inline-block text-[9px] bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded font-medium">
+              🗳️ En votació
             </span>
           )}
         </div>
