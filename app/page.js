@@ -124,6 +124,30 @@ export default async function Home() {
 
   async function afegirDesDeUsuari(formData) {
     'use server'
+    const LIMIT = 5;
+    const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+    const cookieStore = await cookies();
+    const now = Date.now();
+
+    // Llegim els timestamps de les pel·lícules afegides recentment per aquest usuari
+    const raw = cookieStore.get('added_movies_log')?.value;
+    let timestamps = [];
+    if (raw) {
+      try {
+        timestamps = JSON.parse(raw);
+      } catch {
+        timestamps = [];
+      }
+    }
+
+    // Ens quedem només amb els de l'última setmana
+    const recentTimestamps = timestamps.filter(t => now - t < WEEK_MS);
+
+    if (recentTimestamps.length >= LIMIT) {
+      return { success: false, error: `Has arribat al límit de ${LIMIT} pel·lícules afegides aquesta setmana. Torna-ho a provar més endavant.` };
+    }
+
     const tmdbId = Number(formData.get('tmdbId'));
     const title = formData.get('title');
     const poster = formData.get('poster');
@@ -147,6 +171,10 @@ export default async function Home() {
       en_votacio: false,
       votes: 0
     });
+
+    // Registrem aquest afegit i guardem la cookie actualitzada
+    recentTimestamps.push(now);
+    cookieStore.set('added_movies_log', JSON.stringify(recentTimestamps), { maxAge: 60 * 60 * 24 * 30 });
     
     revalidatePath('/');
     return { success: true };
