@@ -125,8 +125,8 @@ export default function HomeRepository({ movies = [], tags = [], historyRecords 
                 className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-[10px] sm:text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
               >
                 <option value="title">Alfabètic (A-Z)</option>
-                <option value="votes-desc">Més vots</option>
-                <option value="votes-asc">Menys vots</option>
+                <option value="votes-desc">Més vots totals</option>
+                <option value="votes-asc">Menys vots totals</option>
               </select>
             </div>
           </div>

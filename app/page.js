@@ -198,15 +198,18 @@ export default async function Home() {
                     href={`https://www.themoviedb.org/movie/${winner.tmdbId}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex gap-4 items-center shadow-sm hover:border-indigo-500 hover:bg-slate-750 hover:shadow-indigo-500/10 hover:shadow-lg transition cursor-pointer group"                    
-                  >                   
+                    className="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex gap-4 items-start shadow-sm hover:border-indigo-500 hover:bg-slate-750 hover:shadow-indigo-500/10 hover:shadow-lg transition cursor-pointer group"                    
+                  >
                     {winner?.poster ? (
                       <img src={`https://image.tmdb.org/t/p/w92${winner.poster}`} alt={winner.title} className="w-14 h-20 object-cover rounded-lg shadow" />
                     ) : <div className="w-14 h-20 bg-slate-700 rounded-lg" />}
-                    <div>
-                      <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-medium">{record.roundName}</span>
+                    <div className="flex-auto">
+                      <div className="flex justify-between items-start">
+                        <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-medium">{record.roundName}</span>
+                        <span className="text-[10px]">↗</span>
+                      </div>
                       <h4 className="font-bold text-sm mt-1 group-hover:text-indigo-300 transition">{winner?.title} {anyPeli && <span className="text-xs text-slate-400 mt-1">({anyPeli})</span>}</h4>                     
-                      <p className="text-xs text-slate-400 mt-1">{winner?.votes} vots</p>
+                      <p className="text-xs text-slate-400 mt-1">⭐ {winner?.votes} vots</p>
                     </div>
                   </a>
                 );
