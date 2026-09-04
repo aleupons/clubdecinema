@@ -11,25 +11,21 @@ function Synopsis({ movieId, overview, expandedIds, toggleExpanded, clampClass, 
     if (!el) return;
 
     const measure = () => {
+      if (expanded) return; // no remesurar quan no hi ha clamp actiu
       setCanExpand(el.scrollHeight > el.clientHeight + 1);
     };
 
-    // Mesura inicial (després del primer paint)
     const raf = requestAnimationFrame(measure);
-
-    // Torna a mesurar quan les fonts acabin de carregar (evita mesures amb font de fallback)
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(measure);
     }
-
-    // Torna a mesurar si canvia la mida de viewport (mòbil <-> desktop sense recarregar)
     window.addEventListener('resize', measure);
 
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', measure);
     };
-  }, [overview]);
+  }, [overview, expanded]);
 
   return (
     <>
@@ -37,13 +33,13 @@ function Synopsis({ movieId, overview, expandedIds, toggleExpanded, clampClass, 
         {overview || "Sense sinopsi disponible per aquesta pel·lícula."}
       </p>
       {canExpand && (
-        <button
+        <span
           type="button"
           onClick={() => toggleExpanded(movieId)}
           className="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold mt-1 cursor-pointer"
         >
           {expanded ? 'Amagar ▲' : 'Llegir-ne més ▼'}
-        </button>
+        </span>
       )}
     </>
   );
@@ -129,17 +125,21 @@ export default function ActiveMoviesList({ activeMovies, isVotingReady, votedMov
                   className={`${
                     isMyVote ? 'border-emerald-500 ring-1 ring-emerald-500/50 shadow-emerald-900/20' : 
                     movie.guanyadora ? 'border-amber-500/50' : 'border-slate-700/50'
-                  } bg-slate-800 border rounded-xl overflow-hidden shadow flex flex-col transition-all duration-300 has-[button:hover]:border-indigo-400 has-[button:hover]:shadow-lg has-[button:hover]:shadow-indigo-500/20 has-[button:hover]:-translate-y-1`}
+                  } p-3 bg-slate-800 border rounded-xl overflow-hidden shadow flex flex-col transition-all duration-300 has-[button:hover]:border-indigo-400 has-[button:hover]:shadow-lg has-[button:hover]:shadow-indigo-500/20 has-[button:hover]:-translate-y-1`}
                 >
-                  <div className="p-3 flex gap-3 items-start">
+                  <div className="flex gap-3 items-start">                    
                     {movie.poster ? (
                       <img src={`https://image.tmdb.org/t/p/w92${movie.poster}`} alt={movie.title} className="w-10 h-14 object-cover rounded shadow-sm flex-shrink-0" />
                     ) : (
                       <div className="w-10 h-14 bg-slate-700 rounded flex items-center justify-center text-[8px] text-slate-400 flex-shrink-0">Sense Img</div>
-                    )}
+                    )}                    
                     <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start gap-1">
+                      <div className="flex items-start justify-between gap-1">
                         <h4 className="text-wrap text-xs font-bold text-white truncate" title={movie.title}>{movie.title}</h4>
+                        <span className="text-nowrap text-[10px] font-bold text-emerald-400">⭐ {movie.votes}</span>
+                      </div>
+                      <div className="flex items-start justify-between pt-1">
+                        <span className="text-[10px] text-slate-400">{anyPeli}</span>                        
                         <a 
                           href={`https://www.themoviedb.org/movie/${movie.tmdbId}`} 
                           target="_blank" 
@@ -150,28 +150,24 @@ export default function ActiveMoviesList({ activeMovies, isVotingReady, votedMov
                           TMDB ↗
                         </a>
                       </div>
-                      <div className="flex items-center justify-between mt-1">
-                        <span className="text-[10px] text-slate-400">{anyPeli}</span>
-                        <span className="text-[10px] font-bold text-emerald-400">⭐ {movie.votes}</span>
-                      </div>
                     </div>
                   </div>
 
                   <span
                     type="button"
                     onClick={() => toggleExpanded(movie._id)}
-                    className="w-full text-[10px] text-indigo-300 hover:text-indigo-400 ps-3 pb-1 cursor-pointer"
+                    className="w-full text-[10px] text-indigo-300 hover:text-indigo-400 cursor-pointer pt-1"
                   >
                     {expandedIds[movie._id] ? '▲ Amagar sinopsi' : '▼ Veure sinopsi'}
                   </span>
                   {expandedIds[movie._id] && (
-                    <p className="text-[10px] text-slate-300 leading-relaxed px-3 pb-2 text-justify">
+                    <p className="text-[10px] text-slate-300 leading-relaxed pt-2 text-justify">
                       {movie.overview || "Sense sinopsi disponible per aquesta pel·lícula."}
                     </p>
                   )}
 
                   {!votingClosed && (
-                    <div className={`mt-auto p-2 border-t ${isMyVote ? 'border-emerald-500/30 bg-emerald-900/10' : 'border-slate-700/50 bg-slate-800/80'}`}>
+                    <div className={`mt-auto pt-2 ${isMyVote ? 'border-emerald-500/30 bg-emerald-900/10' : 'border-slate-700/50 bg-slate-800/80'}`}>
                       <form action={votar}>
                         <input type="hidden" name="id" value={movie._id} />
                         <button type="submit" className={`w-full text-white text-xs font-bold py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1 ${
