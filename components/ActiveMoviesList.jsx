@@ -1,5 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
+import { useFormStatus } from 'react-dom';
 
 function Synopsis({ movieId, overview, expandedIds, toggleExpanded, clampClass, textClass }) {
   const ref = useRef(null);
@@ -42,6 +43,34 @@ function Synopsis({ movieId, overview, expandedIds, toggleExpanded, clampClass, 
         </span>
       )}
     </>
+  );
+}
+
+function VoteButton({ isMyVote, votedMovieId, compact }) {
+  const { pending } = useFormStatus();
+
+  const text = isMyVote ? 'Retirar vot' : votedMovieId ? 'Canviar vot' : 'Votar';
+  const icon = isMyVote ? '✅' : votedMovieId ? '🔄' : '🗳️';
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className={`w-full text-white font-bold transition shadow-lg flex items-center justify-center gap-2 ${
+        compact ? 'text-xs py-1.5 rounded-lg' : 'py-3 rounded-xl'
+      } ${
+        pending
+          ? 'bg-slate-600 cursor-wait'
+          : isMyVote
+          ? 'bg-emerald-600 hover:bg-red-500 shadow-emerald-900/20 cursor-pointer'
+          : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-900/20 cursor-pointer'
+      }`}
+    >
+      {pending && (
+        <span className={`border-2 border-white border-t-transparent rounded-full animate-spin ${compact ? 'w-3 h-3' : 'w-4 h-4'}`} />
+      )}
+      {pending ? 'Processant...' : <>{icon} {text}</>}
+    </button>
   );
 }
 
@@ -170,11 +199,7 @@ export default function ActiveMoviesList({ activeMovies, isVotingReady, votedMov
                     <div className={`mt-auto pt-2 ${isMyVote ? 'border-emerald-500/30 bg-emerald-900/10' : 'border-slate-700/50 bg-slate-800/80'}`}>
                       <form action={votar}>
                         <input type="hidden" name="id" value={movie._id} />
-                        <button type="submit" className={`w-full text-white text-xs font-bold py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1 ${
-                          isMyVote ? 'bg-emerald-600 hover:bg-red-600' : 'bg-indigo-600/90 hover:bg-indigo-500'
-                        }`}>
-                          {isMyVote ? '✅ Retirar vot' : votedMovieId ? '🔄 Canviar' : '🗳️ Votar'}
-                        </button>
+                        <VoteButton isMyVote={isMyVote} votedMovieId={votedMovieId} compact />
                       </form>
                     </div>
                   )}
@@ -249,12 +274,8 @@ export default function ActiveMoviesList({ activeMovies, isVotingReady, votedMov
                 {!votingClosed && (
                   <div className={`p-5 border-t ${isMyVote ? 'bg-emerald-900/10 border-emerald-500/30' : 'bg-slate-800/80 border-slate-700'}`}>
                     <form action={votar}>
-                      <input type="hidden" name="id" value={movie._id} />
-                      <button type="submit" className={`w-full text-white font-bold py-3 rounded-xl transition shadow-lg cursor-pointer flex items-center justify-center gap-2 ${
-                        isMyVote ? 'bg-emerald-600 hover:bg-red-500 shadow-emerald-900/20' : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-900/20'
-                      }`}>
-                        {isMyVote ? '✅ Retirar vot' : votedMovieId ? '🔄 Canviar vot' : '🗳️ Votar'}
-                      </button>
+                      <input type="hidden" name="id" value={movie._id} />                      
+                      <VoteButton isMyVote={isMyVote} votedMovieId={votedMovieId} />
                     </form>
                   </div>
                 )}

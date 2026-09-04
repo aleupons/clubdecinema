@@ -7,6 +7,7 @@ export default function LiveSearch({ onAddMovie, tags = [], existingMovies = [] 
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState({ text: '', type: '' });
   const [addedLocal, setAddedLocal] = useState(new Set()); // Per actualitzar a l'instant els ja afegits sense recarregar
+  const [addingId, setAddingId] = useState(null);
 
   useEffect(() => {
     if (statusMsg.text) {
@@ -60,6 +61,7 @@ export default function LiveSearch({ onAddMovie, tags = [], existingMovies = [] 
     }
 
     setStatusMsg({ text: 'Afegint...', type: 'info' });
+    setAddingId(movie.id);
     
     try {
       const res = await onAddMovie(formData);
@@ -72,6 +74,8 @@ export default function LiveSearch({ onAddMovie, tags = [], existingMovies = [] 
       }
     } catch (err) {
       setStatusMsg({ text: `Error a l'afegir la pel·lícula.`, type: 'error' });
+    } finally {
+      setAddingId(null);
     }
   };
 
@@ -153,14 +157,19 @@ export default function LiveSearch({ onAddMovie, tags = [], existingMovies = [] 
                     {/* Botó que es queda deshabilitat visualment amb text diferent */}
                     <button 
                       type="submit" 
-                      disabled={alreadyExists}
-                      className={`px-2 py-1.5 rounded-lg text-xs font-bold transition flex-1 ${
+                      disabled={alreadyExists || addingId === movie.id}
+                      className={`px-2 py-1.5 rounded-lg text-xs font-bold transition flex-1 flex items-center justify-center gap-1.5 ${
                         alreadyExists 
                           ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed' 
+                          : addingId === movie.id
+                          ? 'bg-emerald-700 text-emerald-200 cursor-wait'
                           : 'bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer'
                       }`}
                     >
-                      {alreadyExists ? 'Ja afegida' : 'Afegir'}
+                      {addingId === movie.id && (
+                        <span className="w-3 h-3 border-2 border-emerald-200 border-t-transparent rounded-full animate-spin" />
+                      )}
+                      {alreadyExists ? 'Ja afegida' : addingId === movie.id ? 'Afegint...' : 'Afegir'}
                     </button>
                   </form>
                 </div>

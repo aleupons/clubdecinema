@@ -337,8 +337,9 @@ export default async function AdminPage() {
                         href={`https://www.themoviedb.org/movie/${m.tmdbId}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`bg-slate-900 border rounded-xl p-3 flex gap-3 items-center ${m.guanyadora ? 'border-amber-500/50' : 'border-slate-700/50'} transition cursor-pointer group`}
-                      >       
+                        className={`relative bg-slate-900 border rounded-xl p-3 flex gap-3 items-center ${m.guanyadora ? 'border-amber-500/50' : 'border-slate-700/50'} transition cursor-pointer group`}
+                      >
+                        <span className="absolute top-3 right-3 text-[10px]">↗</span>       
                         {m.poster ? (
                           <img src={`https://image.tmdb.org/t/p/w92${m.poster}`} alt={m.title} className="w-10 h-14 object-cover rounded shadow" />
                         ) : <div className="w-10 h-14 bg-slate-800 rounded" />}
