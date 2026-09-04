@@ -8,6 +8,9 @@ export default function AdminRepository({ movies, tags, activeMoviesCount, toggl
   const [sortBy, setSortBy] = useState('title');
   const [isPending, startTransition] = useTransition();
   const [movieToDelete, setMovieToDelete] = useState(null);
+  const [expandedIds, setExpandedIds] = useState({});
+
+  const toggleExpanded = (id) => setExpandedIds(prev => ({ ...prev, [id]: !prev[id] }));
 
   const movieVotesMap = {};
   const winningTmdbIds = new Set();
@@ -160,8 +163,22 @@ export default function AdminRepository({ movies, tags, activeMoviesCount, toggl
                             </a>
                           </div>
                           {anyPeli && <p className="text-[11px] text-slate-400 mt-0.5">{anyPeli}</p>}
-                          <p className="text-[11px] text-emerald-400 mt-0.5 font-medium">⭐ {accumulatedVotes} vots</p>
-                          {guanyadora && <span className="inline-block mt-1 text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-semibold">🏆 Guanyadora</span>}                          
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <p className="text-[11px] text-emerald-400 mt-0.5 font-medium">⭐ {accumulatedVotes} vots</p>
+                            {guanyadora && <span title="Guanyadora" className="inline-block mt-1 text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-medium">🏆</span>}                          
+                          </div>
+                          <span
+                            type="button"
+                            onClick={() => toggleExpanded(movie._id)}
+                            className="w-full text-[10px] text-indigo-300 hover:text-indigo-400 cursor-pointer pt-1"
+                          >
+                            {expandedIds[movie._id] ? '▲ Amagar sinopsi' : '▼ Veure sinopsi'}
+                          </span>
+                          {expandedIds[movie._id] && (
+                            <p className="text-[10px] text-slate-300 leading-relaxed pt-2 text-justify">
+                              {movie.overview || "Sense sinopsi disponible per aquesta pel·lícula."}
+                            </p>
+                          )}
                         </div>
                       </div>
 

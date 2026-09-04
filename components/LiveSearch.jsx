@@ -160,7 +160,7 @@ export default function LiveSearch({ onAddMovie, tags = [], existingMovies = [] 
                           : 'bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer'
                       }`}
                     >
-                      {alreadyExists ? 'Ja afegida' : 'Afegir +'}
+                      {alreadyExists ? 'Ja afegida' : 'Afegir'}
                     </button>
                   </form>
                 </div>

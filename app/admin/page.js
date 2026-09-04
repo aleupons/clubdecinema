@@ -9,6 +9,7 @@ import AdminRepository from '@/components/AdminRepository';
 import LiveSearch from '@/components/LiveSearch';
 import Navbar from '@/components/Navbar';
 import VotingControls from '@/components/VotingControls';
+import TagManager from '@/components/TagManager';
 
 export const dynamic = 'force-dynamic';
 
@@ -120,6 +121,15 @@ export default async function AdminPage() {
     if (!name) return;
     await connectDB();
     await Tag.create({ name });
+    revalidatePath('/admin');
+    revalidatePath('/');
+  }
+
+  async function eliminarTag(formData) {
+    'use server'
+    const id = formData.get('id');
+    await connectDB();
+    await Tag.findByIdAndDelete(id);
     revalidatePath('/admin');
     revalidatePath('/');
   }
@@ -263,33 +273,7 @@ export default async function AdminPage() {
               </div>
             </div>
 
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg h-fit">
-              <h4 className="font-bold text-sm text-slate-200 mb-4">Afegir categories</h4>
-              <form action={afegirTag} className="flex gap-2 mb-6">
-                <input 
-                  type="text" 
-                  name="name" 
-                  placeholder="Nova categoria (ex: Acció...)" 
-                  className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 flex-1 shadow-inner"
-                />
-                <button type="submit" className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition cursor-pointer">
-                  Crear 💾
-                </button>
-              </form>
-              
-              <div>
-                <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Categories existents:</h5>
-                <div className="flex flex-wrap gap-2">
-                  {tags.length > 0 ? tags.map(tag => (
-                    <span key={tag._id} className="bg-slate-900 border border-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-medium shadow-sm">
-                      {tag.name}
-                    </span>
-                  )) : (
-                    <span className="text-xs text-slate-500">No hi ha categories creades.</span>
-                  )}
-                </div>
-              </div>
-            </div>
+            <TagManager tags={tags} afegirTag={afegirTag} eliminarTag={eliminarTag} />
           </div>
         </section>
 
