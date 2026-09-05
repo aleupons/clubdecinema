@@ -43,10 +43,12 @@ export default function Navbar({ page }) {
 
   const scrollTo = (id) => {
     setIsOpen(false);
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+    setTimeout(() => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 50);
   };
 
   const getDesktopClass = (id) => `transition-all cursor-pointer px-3 py-1.5 rounded-lg ${

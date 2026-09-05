@@ -140,7 +140,7 @@ export default function LiveSearch({ onAddMovie, tags = [], existingMovies = [] 
                   </div>
                   <p className="text-xs text-slate-400 mt-0.5">{movie.release_date ? movie.release_date.split('-')[0] : 'Sense data'}</p>
                   
-                  <form onSubmit={(e) => handleAdd(e, movie)} className="mt-2 flex gap-1">
+                  <form onSubmit={(e) => handleAdd(e, movie)} className="mt-2 flex flex-col min-[400px]:flex-row gap-1">
                     <input type="hidden" name="tmdbId" value={movie.id} />
                     <input type="hidden" name="title" value={movie.title} />
                     <input type="hidden" name="release_date" value={movie.release_date} />
@@ -148,7 +148,7 @@ export default function LiveSearch({ onAddMovie, tags = [], existingMovies = [] 
                     <input type="hidden" name="overview" value={movie.overview || ''} />
                     
                     {!alreadyExists && (
-                      <select name="tagId" required defaultValue="" className="bg-slate-800 border border-slate-600 rounded-lg text-[10px] px-1 text-slate-300 flex-1 min-w-0 cursor-pointer">
+                      <select name="tagId" required defaultValue="" className="py-1.5 bg-slate-800 border border-slate-600 rounded-lg text-[10px] px-1 text-slate-300 flex-1 min-w-0 cursor-pointer">
                         <option value="" disabled className="text-slate-500 opacity-50">Seleccionar categoria</option>
                         {tags.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
                       </select>
@@ -158,7 +158,7 @@ export default function LiveSearch({ onAddMovie, tags = [], existingMovies = [] 
                     <button 
                       type="submit" 
                       disabled={alreadyExists || addingId === movie.id}
-                      className={`px-2 py-1.5 rounded-lg text-xs font-bold transition flex-1 flex items-center justify-center gap-1.5 ${
+                      className={`py-1.5 rounded-lg text-xs font-bold transition flex-1 flex items-center justify-center gap-1.5 ${
                         alreadyExists 
                           ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed' 
                           : addingId === movie.id

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useFormStatus } from 'react-dom';
 
 function Synopsis({ movieId, overview, expandedIds, toggleExpanded, clampClass, textClass }) {
@@ -79,6 +79,10 @@ export default function ActiveMoviesList({ activeMovies, isVotingReady, votedMov
   const [expandedIds, setExpandedIds] = useState({});
   
   const toggleExpanded = (id) => setExpandedIds(prev => ({ ...prev, [id]: !prev[id] }));
+  const displayedMovies = useMemo(() => {
+    if (!votingClosed) return activeMovies;
+    return [...activeMovies].sort((a, b) => b.votes - a.votes);
+  }, [activeMovies, votingClosed]);
 
   return (
     <div className="space-y-6">
@@ -88,7 +92,7 @@ export default function ActiveMoviesList({ activeMovies, isVotingReady, votedMov
           🗳️ <span>Vota la pel·lícula del mes</span>
         </h2>
 
-        {activeMovies.length > 0 && isVotingReady && (
+        {displayedMovies.length > 0 && isVotingReady && (
           <div className="flex bg-slate-900 border border-slate-700 rounded-xl p-1">
             <button
               type="button"
@@ -133,13 +137,13 @@ export default function ActiveMoviesList({ activeMovies, isVotingReady, votedMov
       )}
 
       {/* Llistat de pel·lícules adaptat al viewMode */}
-      {activeMovies.length > 0 && isVotingReady && (
+      {displayedMovies.length > 0 && isVotingReady && (
         <div className={
           viewMode === 'detailed' 
             ? "grid grid-cols-1 md:grid-cols-2 gap-6" 
             : "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3"
         }>
-          {activeMovies.map(movie => {
+          {displayedMovies.map(movie => {
             const anyPeli = movie.release_date ? new Date(movie.release_date).getFullYear() : (movie.year || '');
             const isMyVote = movie._id === votedMovieId; // Comprova si és la que has votat
 
