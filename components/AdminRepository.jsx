@@ -137,8 +137,11 @@ export default function AdminRepository({ movies, tags, activeMoviesCount, toggl
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 pt-4 border-t border-slate-700/50">
                 {moviesList.map(movie => {
-                  const guanyadora = winningTmdbIds.has(movie.tmdbId);
                   const accumulatedVotes = movieVotesMap[movie.tmdbId] || 0;
+                  const guanyadora = winningTmdbIds.has(movie.tmdbId);
+                  const numVotacions = historyRecords.filter(record => 
+                    record.movies.some(m => m.tmdbId === movie.tmdbId)
+                  ).length;
                   const anyPeli = movie.release_date ? new Date(movie.release_date).getFullYear() : (movie.year || '');
                   
                   return (
@@ -164,7 +167,8 @@ export default function AdminRepository({ movies, tags, activeMoviesCount, toggl
                           </div>
                           {anyPeli && <p className="text-[11px] text-slate-400 mt-0.5">{anyPeli}</p>}
                           <div className="flex flex-wrap items-center gap-1.5">
-                            <p className="text-[11px] text-emerald-400 mt-0.5 font-medium">⭐ {accumulatedVotes} vots</p>
+                            <p title="Total de vots acumulats" className="text-[11px] text-emerald-400 mt-0.5 font-medium">⭐ {accumulatedVotes} vots</p>
+                            {numVotacions > 0 && <span title="Vegades que ha estat proposada en votació" className="inline-block mt-1 text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded font-medium">🗳️ {numVotacions}</span>}
                             {guanyadora && <span title="Guanyadora" className="inline-block mt-1 text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-medium">🏆</span>}                          
                           </div>
                           <span

@@ -13,7 +13,7 @@ import Navbar from '@/components/Navbar';
 export default async function Home() {
   await connectDB();
   const rawTags = await Tag.find().lean();
-  const tags = rawTags.map(t => ({ _id: t._id.toString(), name: t.name }));
+  const tags = rawTags.map(t => ({ _id: t._id.toString(), name: t.name })).sort((a, b) => a.name.localeCompare(b.name));
   const tagsMap = new Map(tags.map(t => [t._id, t]));
   const tagsNameMap = new Map(tags.map(t => [t.name, t]));
 

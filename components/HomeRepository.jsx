@@ -73,10 +73,9 @@ export default function HomeRepository({ movies = [], tags = [], historyRecords 
 
       {/* Buscador i filtres en bloc propi */}
       <div className="flex flex-col gap-4 bg-slate-800 p-4 rounded-xl border border-slate-700">
-        <div className="flex flex-col lg:flex-row gap-3 justify-between items-center">
-          
+        <div className="flex flex-col sm:flex-row gap-3 justify-between items-center">          
           {/* Cerca amb botó de neteja (creu) */}
-          <div className="relative w-full lg:w-72 flex-shrink-0">
+          <div className="relative w-full sm:flex-1 sm:min-w-0 flex-shrink-0">
             <input 
               type="text" 
               placeholder="Cercar al repositori..."
@@ -95,12 +94,12 @@ export default function HomeRepository({ movies = [], tags = [], historyRecords 
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-end">
+          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-center sm:justify-end sm:flex-shrink-0">
             {/* Canvi de vista (Normal vs Compacta) */}
-            <div className="flex bg-slate-900 border border-slate-700 rounded-xl p-1">
+            <div className="flex h-9 bg-slate-900 border border-slate-700 rounded-xl p-1">
               <button
                 onClick={() => setViewMode('normal')}
-                className={`px-3 py-1.5 text-[10px] sm:text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+                className={`px-3 text-[10px] sm:text-xs font-medium rounded-lg transition-colors cursor-pointer ${
                   viewMode === 'normal' ? 'bg-slate-700 text-white shadow' : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -108,7 +107,7 @@ export default function HomeRepository({ movies = [], tags = [], historyRecords 
               </button>
               <button
                 onClick={() => setViewMode('compact')}
-                className={`px-3 py-1.5 text-[10px] sm:text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+                className={`px-3 text-[10px] sm:text-xs font-medium rounded-lg transition-colors cursor-pointer ${
                   viewMode === 'compact' ? 'bg-slate-700 text-white shadow' : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -122,7 +121,7 @@ export default function HomeRepository({ movies = [], tags = [], historyRecords 
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-[10px] sm:text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                className="h-9 px-3 bg-slate-900 border border-slate-700 rounded-xl text-[10px] sm:text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
               >
                 <option value="title">Alfabètic (A-Z)</option>
                 <option value="votes-desc">Més vots totals</option>
@@ -133,7 +132,7 @@ export default function HomeRepository({ movies = [], tags = [], historyRecords 
         </div>
 
         {/* Botons per a cada categoria / tag */}
-        <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-700/60">
+        <div className="flex flex-wrap justify-center gap-1.5 pt-2 border-t border-slate-700/60">
           <button
             type="button"
             onClick={() => setFilterTag('')}
@@ -213,9 +212,21 @@ function renderMovieCard(movie, winningTmdbIds, voteMap, tags, viewMode, expande
             {anyPeli && <span className="text-[10px] text-slate-400 flex-shrink-0">{anyPeli}</span>}
             <span className="ms-auto text-[10px]">↗</span>
           </div>
-          <div className="flex items-center gap-2 mt-0.5">
+          <div className="flex items-end gap-2 mt-0.5">
              {tagName && <span className="text-[9px] text-slate-500 truncate">{tagName}</span>}
-             {totalVotes > 0 && <span className="text-[9px] text-indigo-400 ml-auto">⭐ {totalVotes}</span>}
+             <div className="flex items-center ms-auto gap-1">
+              {movie.en_votacio && (
+                <span title="En votació" className="inline-block text-[9px] bg-emerald-500/10 text-emerald-300 px-0.5 py-0 rounded font-medium">
+                  🗳️
+                </span>
+              )}
+              {guanyadora && (
+                <span title="Guanyadora" className="inline-block text-[9px] bg-amber-500/10 text-amber-300 px-0.5 py-0 rounded font-medium">
+                  🏆
+                </span>
+              )}   
+              {totalVotes > 0 && <span title="Total de vots acumulats" className="text-[9px] bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 text-indigo-400 px-0.5 py-0 rounded font-medium ml-auto">⭐ {totalVotes}</span>}
+             </div>
           </div>
         </div>
       </a>
@@ -256,13 +267,8 @@ function renderMovieCard(movie, winningTmdbIds, voteMap, tags, viewMode, expande
             </span>
           )}
           {totalVotes > 0 && (
-            <span className="inline-block text-[9px] bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.5 rounded font-medium">
+            <span title="Total de vots acumulats" className="inline-block text-[9px] bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.5 rounded font-medium">
               ⭐ {totalVotes} vots
-            </span>
-          )}
-          {guanyadora && (
-            <span title="Guanyadora" className="inline-block text-[9px] bg-amber-500/10 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-medium">
-              🏆
             </span>
           )}
           {movie.en_votacio && (
@@ -270,6 +276,11 @@ function renderMovieCard(movie, winningTmdbIds, voteMap, tags, viewMode, expande
               🗳️
             </span>
           )}
+          {guanyadora && (
+            <span title="Guanyadora" className="inline-block text-[9px] bg-amber-500/10 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-medium">
+              🏆
+            </span>
+          )}          
         </div>
 
         <span
