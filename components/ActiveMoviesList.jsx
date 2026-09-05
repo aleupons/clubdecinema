@@ -79,42 +79,55 @@ export default function ActiveMoviesList({ activeMovies, isVotingReady, votedMov
   const [expandedIds, setExpandedIds] = useState({});
   
   const toggleExpanded = (id) => setExpandedIds(prev => ({ ...prev, [id]: !prev[id] }));
+
+  const sectionRef = useRef(null);
+  const scrollToSectionTop = () => {
+    if (!sectionRef.current) return;
+    
+    const element = sectionRef.current;
+    const rect = element.getBoundingClientRect();
+    
+    const computedStyles = getComputedStyle(element);
+    const scrollMarginPx = parseFloat(computedStyles.scrollMarginTop) || 0;
+    
+    if (rect.top < scrollMarginPx) {
+      element.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }
+  };
+
   const displayedMovies = useMemo(() => {
     if (!votingClosed) return activeMovies;
     return [...activeMovies].sort((a, b) => b.votes - a.votes);
   }, [activeMovies, votingClosed]);
 
   return (
-    <div className="space-y-6">
-      {/* Capçalera amb el títol i els botons alineats a la mateixa línia */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-4">
-        <h2 className="text-2xl font-bold text-slate-100">
-          🗳️ <span>Vota la pel·lícula del mes</span>
-        </h2>
+    <div ref={sectionRef} className="space-y-6 scroll-mt-[calc(var(--navbar-height)+0.5rem)]">
+      <h2 className="text-2xl font-bold text-slate-100 border-b border-slate-800 pb-3">
+        🗳️ <span>Vota la pel·lícula del mes</span>
+      </h2>
 
-        {displayedMovies.length > 0 && isVotingReady && (
-          <div className="flex bg-slate-900 border border-slate-700 rounded-xl p-1">
-            <button
-              type="button"
-              onClick={() => setViewMode('detailed')}
-              className={`px-3 py-1.5 text-[11px] sm:text-xs font-medium rounded-lg transition-colors cursor-pointer ${
-                viewMode === 'detailed' ? 'bg-slate-700 text-white shadow' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              🔍 Detall
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('compact')}
-              className={`px-3 py-1.5 text-[11px] sm:text-xs font-medium rounded-lg transition-colors cursor-pointer ${
-                viewMode === 'compact' ? 'bg-slate-700 text-white shadow' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              ☷ Graella
-            </button>
-          </div>
-        )}
-      </div>
+      {displayedMovies.length > 0 && isVotingReady && (
+        <div className="sticky z-40 top-[var(--navbar-height)] inline-block bg-slate-900 border border-slate-700 rounded-b-xl shadow-lg shadow-black/60 mb-3">
+          <button
+            type="button"
+            onClick={() => { setViewMode('detailed'); scrollToSectionTop(); }}
+            className={`px-3 py-1.5 text-[11px] sm:text-xs font-medium rounded-bl-xl transition-colors cursor-pointer ${
+              viewMode === 'detailed' ? 'bg-slate-700 text-white shadow' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            🔍 Detall
+          </button>
+          <button
+            type="button"
+            onClick={() => { setViewMode('compact'); scrollToSectionTop(); }}
+            className={`px-3 py-1.5 text-[11px] sm:text-xs font-medium rounded-br-xl transition-colors cursor-pointer ${
+              viewMode === 'compact' ? 'bg-slate-700 text-white shadow' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            ☷ Graella
+          </button>
+        </div>
+      )}
 
       {/* Avisos */}
       {!isVotingReady ? (
@@ -126,7 +139,23 @@ export default function ActiveMoviesList({ activeMovies, isVotingReady, votedMov
         </div>
       ) : votingClosed ? (
         <div className="bg-red-950/40 border border-red-500/40 text-red-300 p-4 rounded-xl text-sm text-center shadow flex items-center justify-center gap-2">
-          <span>🔒</span> La votació s'ha tancat. Gràcies a tots per participar!
+          <div className="flex flex-col gap-3">
+            <span>🔒 La votació s'ha tancat. Gràcies a tots per participar!</span>
+            
+            {process.env.NEXT_PUBLIC_KDRIVE_URI && (() => {
+              const winningMovie = displayedMovies.find(movie => movie.guanyadora);
+              return winningMovie ? (
+                <a 
+                href={process.env.NEXT_PUBLIC_KDRIVE_URI} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="w-full sm:w-auto inline-flex justify-center bg-indigo-800 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold shadow-md shadow-indigo-950/50 transition-all duration-200 cursor-pointer"
+                >
+                  <span className="text-lg">🏆 {winningMovie.title} 🍿🎬 ↗</span>
+                </a>
+              ) : null;
+            })()}
+          </div>
         </div>
       ) : (
         votedMovieId && (
@@ -140,7 +169,7 @@ export default function ActiveMoviesList({ activeMovies, isVotingReady, votedMov
       {displayedMovies.length > 0 && isVotingReady && (
         <div className={
           viewMode === 'detailed' 
-            ? "grid grid-cols-1 md:grid-cols-2 gap-6" 
+            ? "grid grid-cols-1 md:grid-cols-2 gap-3" 
             : "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3"
         }>
           {displayedMovies.map(movie => {

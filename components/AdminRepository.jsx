@@ -1,5 +1,5 @@
 'use client';
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useRef } from 'react';
 
 export default function AdminRepository({ movies, tags, activeMoviesCount, toggleVotacio, eliminarPeli, canviarTag, historyRecords = [], numPelisVotacio = 10 }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -12,11 +12,28 @@ export default function AdminRepository({ movies, tags, activeMoviesCount, toggl
 
   const toggleExpanded = (id) => setExpandedIds(prev => ({ ...prev, [id]: !prev[id] }));
 
+  const sectionRef = useRef(null);
+  const scrollToSectionTop = () => {
+    if (!sectionRef.current) return;
+    
+    const element = sectionRef.current;
+    const rect = element.getBoundingClientRect();
+    
+    const computedStyles = getComputedStyle(element);
+    const scrollMarginPx = parseFloat(computedStyles.scrollMarginTop) || 0;
+    
+    if (rect.top < scrollMarginPx) {
+      element.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }
+  };
+
   const movieVotesMap = {};
+  const movieElectionsMap = {};
   const winningTmdbIds = new Set();
   historyRecords.forEach(record => {
     record.movies.forEach(m => {
       movieVotesMap[m.tmdbId] = (movieVotesMap[m.tmdbId] || 0) + (m.votes || 0);
+      movieElectionsMap[m.tmdbId] = (movieElectionsMap[m.tmdbId] || 0) + 1;
       if (m.guanyadora) winningTmdbIds.add(m.tmdbId);
     });
   });
@@ -45,6 +62,8 @@ export default function AdminRepository({ movies, tags, activeMoviesCount, toggl
     groupedMovies[tagName].sort((a, b) => {
       const votesA = movieVotesMap[a.tmdbId] || 0;
       const votesB = movieVotesMap[b.tmdbId] || 0;
+      const electionsA = movieElectionsMap[a.tmdbId] || 0;
+      const electionsB = movieElectionsMap[b.tmdbId] || 0;
 
       if (sortBy === 'title') {
         return a.title.localeCompare(b.title);
@@ -53,6 +72,12 @@ export default function AdminRepository({ movies, tags, activeMoviesCount, toggl
         return a.title.localeCompare(b.title);
       } else if (sortBy === 'votes-asc') {
         if (votesA !== votesB) return votesA - votesB;
+        return a.title.localeCompare(b.title);
+      } else if (sortBy === 'elections-desc') {
+        if (electionsB !== electionsA) return electionsB - electionsA;
+        return a.title.localeCompare(b.title);
+      } else if (sortBy === 'elections-asc') {
+        if (electionsA !== electionsB) return electionsA - electionsB;
         return a.title.localeCompare(b.title);
       }
 
@@ -71,57 +96,63 @@ export default function AdminRepository({ movies, tags, activeMoviesCount, toggl
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-800 p-4 rounded-xl border border-slate-700">
-        <div className="flex flex-wrap gap-2 w-full">
-          <div className="relative flex-1 md:w-48">
-            <input 
-              type="text" 
-              placeholder="Cercar pel·lícula..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 w-full"
-            />
-            {searchTerm && (
-              <button 
-                type="button" 
-                onClick={() => setSearchTerm('')} 
-                className="absolute right-2.5 top-2 text-slate-400 hover:text-white cursor-pointer transition text-xs"
-              >
-                ✕
-              </button>
-            )}
-          </div>
+    <div ref={sectionRef} className="space-y-6 scroll-mt-[calc(var(--navbar-height)+0.5rem)]">
+      <h2 className="text-2xl font-bold text-slate-100 border-b border-slate-800 pb-3">
+        ⚙️ <span>Gestió del repositori i les votacions</span>
+      </h2>
 
-          <select 
-            value={filterTag} 
-            onChange={(e) => setFilterTag(e.target.value)}
-            className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
-          >
-            <option value="">Totes les categories</option>
-            {tags.map(tag => <option key={tag._id} value={tag._id}>{tag.name}</option>)}
-          </select>
-          <select 
-            value={filterWinner} 
-            onChange={(e) => setFilterWinner(e.target.value)}
-            className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
-          >
-            <option value="all">Totes</option>
-            <option value="winner">🏆 Guanyadores</option>
-            <option value="nowinner">No guanyadores</option>
-          </select>
-          <div className="flex items-center gap-2 w-full md:w-auto justify-end">
-            <span className="text-xs text-slate-400 font-medium">Ordenar:</span>
-            <select 
-              value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+      <div className="sticky z-40 top-[var(--navbar-height)] flex flex-wrap gap-1 sm:gap-2 justify-center items-center bg-slate-800/90 backdrop-blur-md p-4 border border-slate-700 rounded-b-xl shadow-lg shadow-black/60">
+        <div className="relative flex-auto">
+          <input 
+            type="text" 
+            placeholder="Cercar pel·lícula..."
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); scrollToSectionTop(); }}
+            className="h-8 px-3 w-full text-[10px] sm:text-xs bg-slate-900 border border-slate-700 rounded-xl text-[10px] sm:text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+          />
+          {searchTerm && (
+            <button 
+              type="button" 
+              onClick={() => setSearchTerm('')} 
+              className="absolute right-2.5 top-2 text-slate-400 hover:text-white cursor-pointer transition text-xs"
             >
-              <option value="title">Alfabètic (A-Z)</option>
-              <option value="votes-desc">Més vots</option>
-              <option value="votes-asc">Menys vots</option>
-            </select>
-          </div>
+              ✕
+            </button>
+          )}
+        </div>
+
+        <select 
+          value={filterTag} 
+          onChange={(e) => { setFilterTag(e.target.value); scrollToSectionTop(); }}
+          className="h-8 px-3 bg-slate-900 border border-slate-700 rounded-xl text-[10px] sm:text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+        >
+          <option value="">Totes les categories</option>
+          {tags.map(tag => <option key={tag._id} value={tag._id}>{tag.name}</option>)}
+        </select>
+
+        <select 
+          value={filterWinner} 
+          onChange={(e) => { setFilterWinner(e.target.value); scrollToSectionTop(); }}
+          className="h-8 px-3 bg-slate-900 border border-slate-700 rounded-xl text-[10px] sm:text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+        >
+          <option value="all">Totes</option>
+          <option value="winner">🏆 Guanyadores</option>
+          <option value="nowinner">No guanyadores</option>
+        </select>
+
+        <div className="flex items-center gap-2">
+          <span className="hidden sm:inline text-xs text-slate-400 font-medium">Ordenar:</span>
+          <select 
+            value={sortBy} 
+            onChange={(e) => { setSortBy(e.target.value); scrollToSectionTop(); }}
+            className="h-8 px-3 bg-slate-900 border border-slate-700 rounded-xl text-[10px] sm:text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+          >
+            <option value="title">Alfabètic (A-Z)</option>
+            <option value="votes-desc">Més vots</option>
+            <option value="votes-asc">Menys vots</option>
+            <option value="elections-desc">Més votacions</option>
+            <option value="elections-asc">Menys votacions</option>
+          </select>
         </div>
       </div>
 
@@ -234,7 +265,7 @@ export default function AdminRepository({ movies, tags, activeMoviesCount, toggl
           );
         })}
         {filteredMovies.length === 0 && (
-          <p className="text-center text-slate-400 py-8">No s'ha trobat cap pel·lícula.</p>
+          <p className="col-span-full text-center text-slate-400 py-8">No s'ha trobat cap pel·lícula.</p>
         )}
       </div>
 

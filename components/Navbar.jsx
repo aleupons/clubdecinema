@@ -65,7 +65,7 @@ export default function Navbar({ page }) {
 
   return (
     <nav className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6 h-[var(--navbar-height)] flex items-center justify-between">
         <div className="flex items-center gap-3">
           <a href="/" className="text-xl font-black bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent cursor-pointer">
             🎬 Club de Cinema

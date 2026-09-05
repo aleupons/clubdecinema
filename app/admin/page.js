@@ -260,7 +260,7 @@ export default async function AdminPage() {
           <p className="text-slate-400">Gestiona les pel·lícules, categories i votacions</p>
         </header>
 
-        <section id="admin-afegir" className="space-y-6 border-slate-800 scroll-mt-24">
+        <section id="admin-afegir" className="space-y-6 scroll-mt-24">
           <h2 className="text-2xl font-bold border-b border-slate-800 pb-3">
             🎞️ <span>Afegir pel·lícules i categories</span>
           </h2> 
@@ -277,11 +277,7 @@ export default async function AdminPage() {
           </div>
         </section>
 
-        <section id="admin-active" className="space-y-6 scroll-mt-24">
-          <h2 className="text-2xl font-bold border-b border-slate-800 pb-3">
-            🗳️ <span>Votació</span>
-          </h2> 
-
+        <section id="admin-active" className="scroll-mt-24">
           <VotingControls 
             activeMoviesCount={activeMoviesCount}
             numPelisVotacio={numPelisVotacio}
@@ -294,11 +290,7 @@ export default async function AdminPage() {
           />
         </section>
 
-        <section id="admin-repo" className="space-y-6 border-slate-800 scroll-mt-24">
-          <h2 className="text-2xl font-bold border-b border-slate-800 pb-3">
-            ⚙️ <span>Gestió del repositori i les votacions</span>
-          </h2>        
-
+        <section id="admin-repo" className="scroll-mt-24">
           <AdminRepository 
             movies={movies} 
             tags={tags} 
@@ -311,7 +303,7 @@ export default async function AdminPage() {
           />
         </section>
 
-        <section id="admin-history" className="space-y-6 border-slate-800 scroll-mt-24">
+        <section id="admin-history" className="space-y-6 scroll-mt-24">
           <h2 className="text-2xl font-bold border-b border-slate-800 pb-3">
             🕒 <span>Històric de votacions</span>
           </h2>

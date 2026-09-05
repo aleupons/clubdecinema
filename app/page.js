@@ -209,7 +209,7 @@ export default async function Home() {
           <HomeRepository movies={repoMovies} tags={tags} historyRecords={historyWithDetails} />
         </section>
 
-        <section id="history-section" className="space-y-6 border-slate-800 scroll-mt-24">
+        <section id="history-section" className="space-y-6 scroll-mt-24">
           <h2 className="text-2xl font-bold border-b border-slate-800 pb-3">
             🕒 <span>Històric de guanyadores</span>
           </h2>

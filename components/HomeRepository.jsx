@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 export default function HomeRepository({ movies = [], tags = [], historyRecords = [] }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -10,26 +10,30 @@ export default function HomeRepository({ movies = [], tags = [], historyRecords 
   const [expandedIds, setExpandedIds] = useState({});
   const toggleExpanded = (id) => setExpandedIds(prev => ({ ...prev, [id]: !prev[id] }));
 
+  const sectionRef = useRef(null);
+  const scrollToSectionTop = () => {
+    if (!sectionRef.current) return;
+    
+    const element = sectionRef.current;
+    const rect = element.getBoundingClientRect();
+    
+    const computedStyles = getComputedStyle(element);
+    const scrollMarginPx = parseFloat(computedStyles.scrollMarginTop) || 0;
+    
+    if (rect.top < scrollMarginPx) {
+      element.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }
+  };
+
   // 1. Creuament segur per ID per calcular vots acumulats i guanyadores de l'històric
   const winningTmdbIds = new Set();
   const voteMap = {};
 
   historyRecords.forEach(record => {
-    if (record.movies && Array.isArray(record.movies)) {
-      record.movies.forEach(m => {
-        const mId = m.tmdbId || m.movieId || m.id;
-        if (mId !== undefined && mId !== null) {
-          const strId = String(mId);
-          if (m.guanyadora) {
-            winningTmdbIds.add(strId);
-            winningTmdbIds.add(Number(strId));
-          }
-          const votesNum = Number(m.votes) || 0;
-          voteMap[strId] = (voteMap[strId] || 0) + votesNum;
-          voteMap[Number(strId)] = (voteMap[Number(strId)] || 0) + votesNum;
-        }
-      });
-    }
+    record.movies.forEach(m => {
+      voteMap[m.tmdbId] = (voteMap[m.tmdbId] || 0) + (m.votes || 0);
+      if (m.guanyadora) winningTmdbIds.add(m.tmdbId);
+    });
   });
 
   // Filtrar pel·lícules
@@ -42,13 +46,8 @@ export default function HomeRepository({ movies = [], tags = [], historyRecords 
   // 2. Funció d'ordenació (inclou vots acumulats)
   const sortMoviesList = (list) => {
     return [...list].sort((a, b) => {
-      const keyA = String(a.tmdbId);
-      const keyNumA = Number(a.tmdbId);
-      const keyB = String(b.tmdbId);
-      const keyNumB = Number(b.tmdbId);
-
-      const votesA = voteMap[keyA] !== undefined ? voteMap[keyA] : (voteMap[keyNumA] || 0);
-      const votesB = voteMap[keyB] !== undefined ? voteMap[keyB] : (voteMap[keyNumB] || 0);
+      const votesA = voteMap[a.tmdbId] || 0;
+      const votesB = voteMap[b.tmdbId] || 0;
 
       if (sortBy === 'title') {
         return a.title.localeCompare(b.title);
@@ -66,39 +65,49 @@ export default function HomeRepository({ movies = [], tags = [], historyRecords 
   const sortedAndFilteredMovies = sortMoviesList(filteredMovies);
 
   return (
-    <div className="space-y-6">
+    <div ref={sectionRef} className="space-y-6 scroll-mt-[calc(var(--navbar-height)+0.5rem)]">
       <h2 className="text-2xl font-bold text-slate-100 border-b border-slate-800 pb-3">
         🎞️ <span>Pel·lícules proposades</span>
       </h2>
 
       {/* Buscador i filtres en bloc propi */}
-      <div className="flex flex-col gap-4 bg-slate-800 p-4 rounded-xl border border-slate-700">
-        <div className="flex flex-col sm:flex-row gap-3 justify-between items-center">          
-          {/* Cerca amb botó de neteja (creu) */}
-          <div className="relative w-full sm:flex-1 sm:min-w-0 flex-shrink-0">
-            <input 
-              type="text" 
-              placeholder="Cercar al repositori..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 pr-8"
-            />
-            {searchTerm && (
-              <button 
-                type="button" 
-                onClick={() => setSearchTerm('')} 
-                className="absolute right-2.5 top-2 text-slate-400 hover:text-white cursor-pointer transition text-xs"
-              >
-                ✕
-              </button>
-            )}
+      <div className="sticky z-40 top-[var(--navbar-height)] flex flex-col gap-4 bg-slate-800/90 backdrop-blur-md p-4 border border-slate-700 rounded-b-xl shadow-lg shadow-black/60">
+        <div className="flex flex-col sm:flex-row gap-3 justify-between items-center">
+          <div className="flex flex-wrap items-center justify-center gap-1 w-full sm:gap-2 sm:flex-auto sm:w-auto sm:flex-shrink-0">
+            <div className="relative flex-auto">
+              <input 
+                type="text" 
+                placeholder="Cercar al repositori..."
+                value={searchTerm}
+                onChange={(e) => { setSearchTerm(e.target.value); scrollToSectionTop(); }}
+                className="h-8 px-3 w-full text-[10px] sm:text-xs bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 pr-8"
+              />
+              {searchTerm && (
+                <button 
+                  type="button" 
+                  onClick={() => setSearchTerm('')} 
+                  className="absolute right-2.5 top-2 text-slate-400 hover:text-white cursor-pointer transition text-xs"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <select 
+              value={filterTag} 
+              onChange={(e) => { setFilterTag(e.target.value); scrollToSectionTop(); }}
+              className="block sm:hidden h-8 px-3 bg-slate-900 border border-slate-700 rounded-xl text-[10px] sm:text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+            >
+              <option value="">Totes les categories</option>
+              {tags.map(tag => <option key={tag._id} value={tag._id}>{tag.name}</option>)}
+            </select>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-center sm:justify-end sm:flex-shrink-0">
+          <div className="flex flex-wrap items-center justify-center gap-1 w-full sm:w-auto sm:flex-shrink-0">
             {/* Canvi de vista (Normal vs Compacta) */}
-            <div className="flex h-9 bg-slate-900 border border-slate-700 rounded-xl p-1">
+            <div className="flex h-8 bg-slate-900 border border-slate-700 rounded-xl p-1">
               <button
-                onClick={() => setViewMode('normal')}
+                onClick={() => { setViewMode('normal'); scrollToSectionTop(); }}
                 className={`px-3 text-[10px] sm:text-xs font-medium rounded-lg transition-colors cursor-pointer ${
                   viewMode === 'normal' ? 'bg-slate-700 text-white shadow' : 'text-slate-400 hover:text-white'
                 }`}
@@ -106,7 +115,7 @@ export default function HomeRepository({ movies = [], tags = [], historyRecords 
                 ☷ Graella
               </button>
               <button
-                onClick={() => setViewMode('compact')}
+                onClick={() => { setViewMode('compact'); scrollToSectionTop(); }}
                 className={`px-3 text-[10px] sm:text-xs font-medium rounded-lg transition-colors cursor-pointer ${
                   viewMode === 'compact' ? 'bg-slate-700 text-white shadow' : 'text-slate-400 hover:text-white'
                 }`}
@@ -120,8 +129,8 @@ export default function HomeRepository({ movies = [], tags = [], historyRecords 
               <span className="hidden sm:inline text-xs text-slate-400 font-medium">Ordenar:</span>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="h-9 px-3 bg-slate-900 border border-slate-700 rounded-xl text-[10px] sm:text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                onChange={(e) => { setSortBy(e.target.value); scrollToSectionTop(); }}
+                className="h-8 px-3 bg-slate-900 border border-slate-700 rounded-xl text-[10px] sm:text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
               >
                 <option value="title">Alfabètic (A-Z)</option>
                 <option value="votes-desc">Més vots totals</option>
@@ -132,10 +141,10 @@ export default function HomeRepository({ movies = [], tags = [], historyRecords 
         </div>
 
         {/* Botons per a cada categoria / tag */}
-        <div className="flex flex-wrap justify-center gap-1.5 pt-2 border-t border-slate-700/60">
+        <div className="hidden sm:flex flex-wrap justify-center gap-1.5 pt-4 border-t border-slate-700/60">
           <button
             type="button"
-            onClick={() => setFilterTag('')}
+            onClick={() => { setFilterTag(''); scrollToSectionTop(); }}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${
               filterTag === '' 
                 ? 'bg-indigo-600 text-white shadow' 
@@ -148,7 +157,7 @@ export default function HomeRepository({ movies = [], tags = [], historyRecords 
             <button
               key={tag._id}
               type="button"
-              onClick={() => setFilterTag(tag._id)}
+              onClick={() => { setFilterTag(tag._id); scrollToSectionTop(); }}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${
                 filterTag === tag._id 
                   ? 'bg-indigo-600 text-white shadow' 
@@ -158,14 +167,14 @@ export default function HomeRepository({ movies = [], tags = [], historyRecords 
               {tag.name}
             </button>
           ))}
-        </div>
+        </div>        
       </div>
 
       {/* Llistat de pel·lícules que canvia segons el viewMode */}
       <div className={
         viewMode === 'normal'
-          ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-          : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2"
+          ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2"
+          : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1"
       }>
         {sortedAndFilteredMovies.map(movie => renderMovieCard(movie, winningTmdbIds, voteMap, tags, viewMode, expandedIds, toggleExpanded))}
         {sortedAndFilteredMovies.length === 0 && (
@@ -184,10 +193,8 @@ function getTagName(movie, tags) {
 }
 
 function renderMovieCard(movie, winningTmdbIds, voteMap, tags, viewMode, expandedIds, toggleExpanded) {
-  const keyStr = String(movie.tmdbId);
-  const keyNum = Number(movie.tmdbId);
-  const guanyadora = winningTmdbIds.has(keyStr) || winningTmdbIds.has(keyNum);
-  const totalVotes = voteMap[keyStr] !== undefined ? voteMap[keyStr] : (voteMap[keyNum] || 0);
+  const totalVotes = voteMap[movie.tmdbId] || 0;
+  const guanyadora = winningTmdbIds.has(movie.tmdbId);
   const anyPeli = movie.release_date ? new Date(movie.release_date).getFullYear() : (movie.year || '');
   const tagName = getTagName(movie, tags);
 
